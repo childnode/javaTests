@@ -1,0 +1,946 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.childno.javaTest</groupId>
+    <artifactId>mvnProject</artifactId>
+    <version>0.1-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>Maven Example Java EE 6 Project</name>
+
+    <properties>
+        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <js.compiled.dir>${project.build.sourceDirectory}/../webapp</js.compiled.dir>
+        <skipTests>false</skipTests>
+        <reporting.cobertura.version>2.5.1</reporting.cobertura.version>
+        <reporting.cs.version>2.9.1</reporting.cs.version>
+        <reporting.jxr.version>2.3</reporting.jxr.version>
+        <reporting.pmd.version>2.7.1</reporting.pmd.version>
+        <testing.jasmine.version>1.2.0.0</testing.jasmine.version>
+    </properties>
+
+    <organization>
+        <name>childno.de</name>
+        <url>http://childno.de</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>childnode</id>
+            <name>Marcel Silberhorn</name>
+            <email>c0d3r@childno.de</email>
+            <organization>childno.de</organization>
+            <organizationUrl>http://childno.de</organizationUrl>
+            <roles>
+              <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+            <properties>
+              <picUrl>http://www.gravatar.com/avatar/e41ac1ee3c9203da98faec4700519302.png</picUrl>
+              <gtalk>talk∆childno.de</gtalk>
+            </properties>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>JIRA</system>
+        <url>https://jira.childno.de/browse/TST</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:https://github.com/childnode/javaTests.git</connection>
+        <developerConnection>scm:git:git@github.com:childnode/javaTests.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/childnode/javaTests</url>
+    </scm>
+
+    <repositories>
+        <repository>
+            <id>local artifacts</id>
+            <url>file:${basedir}/.m2artifacts</url>
+        </repository>
+        
+        <repository>
+            <id>maven central</id>
+            <url>http://repo1.maven.org/maven2</url>
+        </repository>
+    
+        <repository>
+            <id>EclipseLink Repo</id>
+            <!-- mirrored URL
+            <url>http://www.eclipse.org/downloads/download.php?r=1&amp;nf=1&amp;file=/rt/eclipselink/maven.repo</url>
+            -->
+            <url>http://download.eclipse.org/rt/eclipselink/maven.repo</url>
+            <!-- use this for javax.persistence
+                 (optional - only needed if you are using JPA outside of a Java EE container)
+                SEEMS NOT TO WORK FOR >= 2.3
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            -->
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>local artifacts</id>
+            <url>file:${basedir}/.m2artifacts</url>
+        </pluginRepository>
+        
+        <pluginRepository>
+            <id>maven central</id>
+            <url>http://repo1.maven.org/maven2</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <!-- PLEASE REGARD ORDER OF DEPENDENCIES! ALL IMPLEMENTATIONS OF JEE-WEB-Profile 
+        MUST BE ABOVE THE javaee-web-api DEPENDENCY!
+        see http://dominikdorn.com/2010/05/maven-junit-classformaterror-absent-code-attribute/
+    -->
+    <dependencies>
+
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>[2.3.2]</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>javax.persistence</artifactId>
+            <version>[2.0.3]</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>[1.12]</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <!-- as of > 1.9 servlet is in it's own package -->
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-servlet</artifactId>
+            <version>[1.12]</version>
+            <type>jar</type>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-json</artifactId>
+            <version>[1.12]</version>
+            <type>jar</type>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jettison</artifactId>
+                    <groupId>org.codehaus.jettison</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jaxb-impl</artifactId>
+                    <groupId>com.sun.xml.bind</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-core-asl</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-mapper-asl</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-jaxrs</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-xc</artifactId>
+                    <groupId>org.codehaus.jackson</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>[6.0]</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.sun.xml.ws</groupId>
+            <artifactId>jaxws-rt</artifactId>
+            <version>[2.2.6]</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>[4.8.2]</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jayway.restassured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>[1.2.2]</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.geocoder-java</groupId>
+            <artifactId>geocoder-java</artifactId>
+            <type>jar</type>
+            <version>[0.9]</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>[1.3.164]</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>[1.2.16]</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <!-- no specific version possible due to version resolve failures -->
+            <version>1.1</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--
+        there is no official working repo for this
+        needs compile and to be added to local repo
+
+        <dependency>
+            <groupId>org.geonames</groupId>
+            <artifactId>geonames</artifactId>
+            <version>[1.1.7]</version>
+            <scope>compile</scope>
+        </dependency>
+        -->
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>application.properties</include>
+                    <include>soap.wsdl</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>application.properties</exclude>
+                    <exclude>soap.wsdl</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+            </testResource>
+            <testResource>
+                <directory>src/mock/resources</directory>
+            </testResource>
+        </testResources>
+
+        <plugins>
+            <!-- http://maven.apache.org/plugins/maven-resources-plugin/ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.5</version>
+            </plugin>
+
+            <!-- add additional mock source directory for testing
+                 http://mojo.codehaus.org/build-helper-maven-plugin
+                 http://www.sonatype.com/people/2008/05/adding-additional-source-folders-to-your-maven-build/
+                 http://mackaz.de/304
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.basedir}/src/main/java-fake</source>
+                                <source>${project.basedir}/src/mock/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <compilerVersion>6</compilerVersion>
+                    <compilerArguments>
+                        <endorseddirs>${endorsed.dir}</endorseddirs>
+                    </compilerArguments>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <warSourceExcludes>mockdata/</warSourceExcludes>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${endorsed.dir}</outputDirectory>
+                            <silent>true</silent>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>javax</groupId>
+                                    <artifactId>javaee-endorsed-api</artifactId>
+                                    <version>6.0</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>javax.xml.bind</groupId>
+                                    <artifactId>jaxb-api</artifactId>
+                                    <version>2.2.4</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>javax.xml.ws</groupId>
+                                    <artifactId>jaxws-api</artifactId>
+                                    <version>2.2.8</version>
+                                    <type>jar</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- http://alchim.sourceforge.net/yuicompressor-maven-plugin/compress-mojo.html -->
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.3.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compress</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <nosuffix>true</nosuffix>
+                    <force>true</force>
+                    <jswarn>false</jswarn>
+                    <statistics>false</statistics>
+                    <skip>true</skip>
+                    <excludes>
+                        <exclude>**/lib/**</exclude>
+                        <exclude>**/*.pack.js</exclude>
+                        <exclude>**/*.css</exclude>
+                    </excludes>
+                    <aggregations>
+
+                        <!-- ============================== -->
+                        <!-- Aggregate Sencha App           -->
+                        <!-- ============================== -->
+
+                        <!-- app/init.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/app-build/init.pack.js</output>
+                            <inputDir>${project.build.directory}/${project.build.finalName}/</inputDir>
+                            <includes>
+                                <include>**/app.js</include>
+                                <include>**/routes.js</include>
+                                <include>**/extendSenchaBase.js</include>
+                                <include>**/config.js</include>
+                                <include>**/util.js</include>
+                                <include>**/Filters.js</include>
+                                <include>**/Lang.js</include>
+                                <include>**/Session.js</include>
+                            </includes>
+                        </aggregation>
+
+                        <!-- app/stores.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/app-build/stores.pack.js</output>
+                            <inputDir>${project.build.directory}/${project.build.finalName}/</inputDir>
+                            <includes>
+                                <include>**/stores/*.js</include>
+                            </includes>
+                        </aggregation>
+
+                        <!-- app/views.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/app-build/views.pack.js</output>
+                            <inputDir>${project.build.directory}/${project.build.finalName}/</inputDir>
+                            <includes>
+                                <!-- !! THIS WILL ADD ALL JS FILES IN ALPHANUMERIC OR SYSTEM ORDER!
+                                        IF SPECIAL ORDER IS NEEDED, YOU HAVE TO <include> ALL FILES
+                                        MANUALLY
+                                -->
+                                <include>**/views/**/*.js</include>
+                            </includes>
+                        </aggregation>
+
+                        <!-- app/models.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/app-build/models.pack.js</output>
+                            <inputDir>${project.build.directory}/${project.build.finalName}/</inputDir>
+                            <includes>
+                                <include>**/models/*.js</include>
+                            </includes>
+                        </aggregation>
+
+                        <!-- app/ui.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/app-build/ui.pack.js</output>
+                            <inputDir>${project.build.directory}/${project.build.finalName}/</inputDir>
+                            <includes>
+                                <include>**/ui/*.js</include>
+                            </includes>
+                        </aggregation>
+
+                        <!-- app/controllers.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/sencha-build/controllers.pack.js</output>
+                            <inputDir>${project.build.directory}/${project.build.finalName}/</inputDir>
+                            <includes>
+                                <include>**/controllers/*.js</include>
+                            </includes>
+                        </aggregation>
+
+                        <!-- app/layouts.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/app-build/layouts.pack.js</output>
+                            <inputDir>${project.build.directory}/${project.build.finalName}/</inputDir>
+                            <includes>
+                                <include>**/layouts/*.js</include>
+                            </includes>
+                        </aggregation>
+
+
+                        <!-- app/all.pack.js -->
+                        <aggregation>
+                            <insertNewLine>true</insertNewLine>
+                            <output>${js.compiled.dir}/app-build/all.pack.js</output>
+                            <inputDir>${js.compiled.dir}/app-build</inputDir>
+                            <includes>
+                                <include>init.pack.js</include>
+                                <include>layouts.pack.js</include>
+                                <include>ui.pack.js</include>
+                                <include>views.pack.js</include>
+                                <include>models.pack.js</include>
+                                <include>stores.pack.js</include>
+                                <include>controllers.pack.js</include>
+                            </includes>
+                        </aggregation>
+                    </aggregations>
+                </configuration>
+            </plugin>
+                    
+            <plugin>
+                <groupId>org.jvnet.jax-ws-commons</groupId>
+                <artifactId>jaxws-maven-plugin</artifactId>
+                <version>2.2</version>
+                <!-- disabled goal
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>wsimport</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                -->
+                <configuration>
+                    <!-- The name of your generated source package -->
+                    <packageName>de.childnode.javaTest.soap</packageName>
+                    <!--
+                    <wsdlDirectory>src/main/resources</wsdlDirectory>
+                    <wsdlLocation></wsdlLocation>
+                    -->
+                    <wsdlFiles>
+                        <wsdlFile>${basedir}/src/main/resources/soap.wsdl</wsdlFile>
+                    </wsdlFiles>
+                </configuration>
+        
+                <!-- if you want to use a specific version of JAX-WS, you can do 
+                    so like this -->
+                <!-- 
+                <dependencies>
+                    <dependency>
+                        <groupId>com.sun.xml.ws</groupId>
+                        <artifactId>jaxws-tools</artifactId>
+                        <version>2.1.7</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>org.jvnet.staxex</groupId>
+                                <artifactId>stax-ex</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jvnet.staxex</groupId>
+                        <artifactId>stax-ex</artifactId>
+                        <version>1.2</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>javax.xml.stream</groupId>
+                                <artifactId>stax-api</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
+                 -->
+            </plugin>
+
+            <!-- http://maven.apache.org/plugins/maven-surefire-plugin/test-mojo.html -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12</version>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/wsbeans/**/*.java</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>start-integration-tests</id>
+                        <phase>integration-test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <systemPropertyVariables>
+                                <domain>${ws.appuser.domain}</domain>
+                                <username>${ws.appuser.user}</username>
+                                <password>${ws.appuser.pass}</password>
+                            </systemPropertyVariables>
+                            <includes>
+                                <include>**/wsbeans/**/*.java</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                    <!-- DO NOT ADD EXCLUDES HERE; SEE default-test section above! -->
+                </configuration>
+            </plugin>
+
+            <!--http://mojo.codehaus.org/cobertura-maven-plugin/usage.html-->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>${reporting.cobertura.version}</version>
+                <executions>
+                    <!-- default bound to test
+                         has it's own lifecycle cobertura
+                    -->
+                    <execution>
+                        <id>coverage-reports</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>cobertura</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <instrumentation>
+                        <ignores>
+                            <ignore>some.exclude.pkgs.*</ignore>
+                        </ignores>
+                    </instrumentation>
+                    <formats>
+                        <format>html</format>
+                        <format>xml</format>
+                    </formats>
+                    <omitGplFiles>true</omitGplFiles>
+                </configuration>
+            </plugin>
+
+            <!-- http://maven.apache.org/plugins/maven-checkstyle-plugin/ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${reporting.cs.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>de.childno</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>1.0.0</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>cs-reports</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>checkstyle</goal>
+                        </goals>
+                        <configuration>
+                            <failsOnError>false</failsOnError>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <outputDirectory>${project.reporting.outputDirectory}/checkstyle</outputDirectory>
+                    <configLocation>../checkstyle/childnode_java_convention.xml</configLocation>
+                    <excludes>**/some/exclude/pkgs/**/*.java</excludes>
+                    <outputFileFormat>xml</outputFileFormat>
+                </configuration>
+            </plugin>
+
+            <!-- http://maven.apache.org/plugins/maven-pmd-plugin/ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${reporting.pmd.version}</version>
+                <executions>
+                    <execution>
+                        <id>pmd-reports</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>pmd</goal>
+                            <goal>cpd</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <linkXref>true</linkXref>
+                    <targetJdk>1.6</targetJdk>
+                    <excludes>
+                        <exclude>**/some/exclude/pkgs/**/*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- http://searls.github.com/jasmine-maven-plugin/ -->
+            <plugin>
+                <groupId>com.github.searls</groupId>
+                <artifactId>jasmine-maven-plugin</artifactId>
+                <version>${testing.jasmine.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>pmd-reports</id>
+                        <phase>site</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <jsSrcDir>${project.basedir}/src/main/webapp/app</jsSrcDir>
+                    <jsTestSrcDir>${project.basedir}/src/test/js</jsTestSrcDir>
+                </configuration>
+            </plugin>
+
+            <!--
+            http://tomcat.apache.org/maven-plugin
+            => http://tomcat.apache.org/maven-plugin-2.0-SNAPSHOT/tomcat7-maven-plugin/usage.html
+            mvn tomcat7:help
+            mvn tomcat7:deploy
+            mvn tomcat7:run
+            mvn tomcat7:run-war
+            -->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <!--
+                <executions>
+                    <execution>
+                        <id>start-tomcat</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <path>/</path>
+                            <serverXml>src/main/tomcatconf/server.xml</serverXml>
+                        </configuration>
+                    </execution>
+                </executions>
+                -->
+                <!--http://blog.synyx.de/2011/10/testing-webapp-startup-on-jenkins-with-maven-tomcat-and-web-driver/-->
+                <executions>
+                    <execution>
+                        <id>start-tc</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>run-war-only</goal>
+                        </goals>
+                        <configuration>
+                            <fork>true</fork>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>stop-tc</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>shutdown</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <contextFile>${project.basedir}/src/test/resources/META-INF/context.xml</contextFile>
+                    <path>/mvnProject</path>
+                    <update>true</update>
+                    <contextReloadable>true</contextReloadable>
+                    <httpsPort>8443</httpsPort>
+                    <warFile>target/${project.artifactId}-${project.version}.war</warFile>
+                </configuration>
+            </plugin>
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.tomcat.maven</groupId>
+                    <artifactId>tomcat7-maven-plugin</artifactId>
+                    <version>2.0-beta-1</version>
+                </plugin>
+
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.apache.maven.plugins
+                                        </groupId>
+                                        <artifactId>
+                                            maven-dependency-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.4,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>copy</goal>
+                                            <goal>copy-dependencies</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            net.alchim31.maven
+                                        </groupId>
+                                        <artifactId>
+                                            yuicompressor-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [1.3.0,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>compress</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>
+                                            org.jvnet.jax-ws-commons
+                                        </groupId>
+                                        <artifactId>
+                                            jaxws-maven-plugin
+                                        </artifactId>
+                                        <versionRange>
+                                            [2.2,)
+                                        </versionRange>
+                                        <goals>
+                                            <goal>wsimport</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.codehaus.mojo</groupId>
+                                        <artifactId>build-helper-maven-plugin</artifactId>
+                                        <versionRange>[1.7,)</versionRange>
+                                        <goals>
+                                            <goal>add-test-source</goal>
+                                            <goal>add-source</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore></ignore>
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+                <version>2.0.1</version>
+                <reportSets>
+                    <reportSet>
+                        <id>sunlink</id>
+                        <reports>
+                            <report>javadoc</report>
+                        </reports>
+                        <inherited>true</inherited>
+                        <configuration>
+                            <links>
+                                <link>http://docs.oracle.com/javase/6/docs/api/</link>
+                            </links>
+                        </configuration>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>2.12</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>${reporting.cobertura.version}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>${reporting.jxr.version}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>${reporting.pmd.version}</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>${reporting.cs.version}</version>
+            </plugin>
+        </plugins>
+    </reporting>
+
+    <profiles>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <serverUrl>https://prod.childno.de</serverUrl>
+            </properties>
+        </profile>
+        <profile>
+            <id>preprod</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <serverUrl>https://preprod.childno.de</serverUrl>
+            </properties>
+        </profile>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <serverUrl>https://dev.childno.de</serverUrl>
+            </properties>
+        </profile>
+        <profile>
+            <id>mock</id>
+            <properties>
+                <serverUrl>https://mock.childno.de</serverUrl>
+            </properties>
+        </profile>
+        <profile>
+            <id>debug</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <use.debugmode>true</use.debugmode>
+            </properties>
+        </profile>
+    </profiles>
+
+</project>
